@@ -1,0 +1,26 @@
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  define: {
+    global: 'window',
+  },
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',  // Gateway 포트
+        changeOrigin: true,
+      },
+      '/oauth2': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+      '/login/oauth2': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+    },
+  },
+});
