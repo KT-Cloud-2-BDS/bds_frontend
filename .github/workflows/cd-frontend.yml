@@ -23,12 +23,10 @@ jobs:
           cache: "yarn"
 
       #임시 추가 이후 무조건 삭제 및 기록 삭제
-      - name: Debug
+      - name: Debug sub
         run: |
-          echo "Role ARN length: ${#ROLE}"
-          echo "Role ARN: ${ROLE}"
-        env:
-          ROLE: ${{ secrets.AWS_ROLE_ARN }}
+          echo "Repo: ${{ github.repository }}"
+          echo "Ref: ${{ github.ref }}"
 
       - name: Install & Build
         env:
