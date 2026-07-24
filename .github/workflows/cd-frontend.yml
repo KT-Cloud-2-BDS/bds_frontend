@@ -22,11 +22,6 @@ jobs:
           node-version: "20"
           cache: "yarn"
 
-      #임시 추가 이후 무조건 삭제 및 기록 삭제
-      - name: Debug role
-        run: |
-          echo "${{ secrets.AWS_ROLE_ARN }}" | sed 's/./& /g'
-
       - name: Install & Build
         env:
           VITE_API_GATEWAY_URL: https://api.jubg.shop
