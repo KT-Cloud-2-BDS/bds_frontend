@@ -18,6 +18,7 @@ export default function Header() {
             <nav className="flex gap-4 text-sm font-medium items-center">
                 {accessToken ? (
                     <>
+                        <Link to="/fundings/create" className="text-gray-600 hover:text-teal-600">🚀 펀딩 만들기</Link>
                         <Link to="/notifications" className="text-gray-600 hover:text-teal-600">🔔 알림</Link>
                         <Link to="/wallet" className="text-gray-600 hover:text-teal-600">💰 월렛</Link>
                         <Link to="/orders" className="text-gray-600 hover:text-teal-600">내 주문</Link>

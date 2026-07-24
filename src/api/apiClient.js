@@ -70,10 +70,14 @@ apiClient.interceptors.response.use(
             }
 
             try {
-                // refresh 요청도 같은 baseURL 사용
-                const res = await axios.post(`${API_BASE_URL}/api/auths/token/refresh`, null, {
-                    headers: { Authorization: `Bearer ${refreshToken}` },
-                });
+                const res = await axios.post('/api/auths/token/refresh',
+                    { refreshToken },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    }
+                );
 
                 const { accessToken, refreshToken: newRefreshToken } = res.data;
                 useAuthStore.getState().setTokens(accessToken, newRefreshToken);

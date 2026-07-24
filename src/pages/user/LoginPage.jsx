@@ -86,6 +86,12 @@ export default function LoginPage() {
             회원가입
           </Link>
         </div>
+          <div className="mt-2 text-center text-sm">
+              비밀번호를 잊으셨나요?{' '}
+              <Link to="/reset-password" className="text-gray-500 underline">
+                  비밀번호 재설정
+              </Link>
+          </div>
       </div>
   );
 }
