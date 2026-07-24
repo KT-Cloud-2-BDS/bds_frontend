@@ -2,6 +2,9 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import useModalStore from './stores/useModalStore';
 import Modal from './components/common/Modal';
 import Header from './components/layout/Header';
+import ProtectedRoute from './components/common/ProtectedRoute';
+import GuestRoute from './components/common/GuestRoute';
+
 import HomePage from './pages/HomePage';
 import FundingListPage from './pages/funding/FundingListPage.jsx';
 import FundingDetailPage from './pages/funding/FundingDetailPage.jsx';
@@ -20,6 +23,9 @@ import SocialSignupPage from './pages/user/SocialSignupPage.jsx';
 import WalletHistoryPage from './pages/payment/WalletHistoryPage.jsx';
 import AccountRegisterPage from "./pages/payment/AccountRegisterPage.jsx";
 import OrderReservedResultPage from "./pages/order/OrderReservedResultPage.jsx";
+import FundingChatPage from './pages/funding/FundingChatPage';
+import InquiryChatPage from './pages/chat/InquiryChatPage';
+import InquiryListPage from "./pages/chat/InquiryListPage.jsx";
 
 
 export default function App() {
@@ -29,25 +35,32 @@ export default function App() {
         <BrowserRouter>
             <Header />
             <Routes>
+                {/* 누구나 접근 가능 */}
                 <Route path="/" element={<HomePage />} />
                 <Route path="/fundings/list" element={<FundingListPage />} />
                 <Route path="/fundings/:id" element={<FundingDetailPage />} />
-                <Route path="/fundings/:fundingId/billing/:orderId" element={<BillingPage />} />
-                <Route path="/order/pay-result" element={<OrderPayResultPage />} />
-                <Route path="/order/cancel-result" element={<OrderCancelResultPage />} />
-                <Route path="/orders" element={<MyOrdersPage />} />
-                <Route path="/orders/:orderId" element={<OrderDetailPage />} />
-                <Route path="/wallet" element={<WalletPage />} />
-                <Route path="/notifications" element={<NotificationsPage />} />
-                <Route path="/mypage" element={<MyPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/signup" element={<SignupPage />} />
+
+                {/* 비로그인만 접근 가능 */}
+                <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
+                <Route path="/signup" element={<GuestRoute><SignupPage /></GuestRoute>} />
                 <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
                 <Route path="/social/signup" element={<SocialSignupPage />} />
-                <Route path="/wallet" element={<WalletPage />} />
-                <Route path="/wallet/history" element={<WalletHistoryPage />} />
-                <Route path="/wallet/account" element={<AccountRegisterPage />} />
-                <Route path="/order/reserved-result" element={<OrderReservedResultPage />} />
+
+                {/* 로그인 필수 */}
+                <Route path="/fundings/:fundingId/billing/:orderId" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
+                <Route path="/order/pay-result" element={<ProtectedRoute><OrderPayResultPage /></ProtectedRoute>} />
+                <Route path="/order/cancel-result" element={<ProtectedRoute><OrderCancelResultPage /></ProtectedRoute>} />
+                <Route path="/order/reserved-result" element={<ProtectedRoute><OrderReservedResultPage /></ProtectedRoute>} />
+                <Route path="/orders" element={<ProtectedRoute><MyOrdersPage /></ProtectedRoute>} />
+                <Route path="/orders/:orderId" element={<ProtectedRoute><OrderDetailPage /></ProtectedRoute>} />
+                <Route path="/wallet" element={<ProtectedRoute><WalletPage /></ProtectedRoute>} />
+                <Route path="/wallet/history" element={<ProtectedRoute><WalletHistoryPage /></ProtectedRoute>} />
+                <Route path="/wallet/account" element={<ProtectedRoute><AccountRegisterPage /></ProtectedRoute>} />
+                <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+                <Route path="/mypage" element={<ProtectedRoute><MyPage /></ProtectedRoute>} />
+                <Route path="/fundings/:id/chat" element={<ProtectedRoute><FundingChatPage /></ProtectedRoute>} />
+                <Route path="/chat/inquiries/:roomId" element={<ProtectedRoute><InquiryChatPage /></ProtectedRoute>} />
+                <Route path="/chat/inquiries" element={<ProtectedRoute><InquiryListPage /></ProtectedRoute>} />
             </Routes>
 
             <Modal

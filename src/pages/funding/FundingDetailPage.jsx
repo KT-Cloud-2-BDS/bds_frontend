@@ -65,6 +65,22 @@ export default function FundingDetailPage() {
     }
   };
 
+  const handleInquiry = async () => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      openModal({title: '안내', message: '로그인이 필요합니다.', type: 'info'});
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const res = await apiClient.post('/api/chat/Inquiries', { productId: Number(id) });
+      navigate(`/chat/inquiries/${res.data.roomId}`);
+    } catch (err) {
+      openModal({title: '문의방 생성 실패', message: (err.response?.data?.message || err.message), type: 'error'});
+    }
+  };
+
   if (loading) return <div className="text-center py-12">로딩 중...</div>;
   if (!funding) return null;
 
@@ -217,6 +233,21 @@ export default function FundingDetailPage() {
                           ? '마감된 펀딩입니다'
                           : '주문하기'}
             </button>
+
+            <div className="flex gap-2 mt-4">
+              <button
+                  onClick={() => navigate(`/fundings/${id}/chat`)}
+                  className="flex-1 border border-teal-500 text-teal-500 py-2 rounded-lg font-bold hover:bg-teal-50"
+              >
+                💬 공개 채팅방
+              </button>
+              <button
+                  onClick={handleInquiry}
+                  className="flex-1 border border-gray-400 text-gray-600 py-2 rounded-lg font-bold hover:bg-gray-50"
+              >
+                📩 문의하기
+              </button>
+            </div>
           </div>
         </div>
       </div>

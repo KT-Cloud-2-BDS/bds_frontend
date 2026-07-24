@@ -1,14 +1,25 @@
 import { useEffect, useRef } from 'react';
-import useModalStore from '../../stores/useModalStore';
 import { useNavigate } from 'react-router-dom';
-import apiClient from '../../api/apiClient.js';
-import useAuthStore from '../../stores/useAuthStore.js';
+import apiClient from '../../api/apiClient';
+import useAuthStore from '../../stores/useAuthStore';
+import useModalStore from '../../stores/useModalStore';
 
 export default function OAuthCallbackPage() {
   const navigate = useNavigate();
   const { openModal } = useModalStore();
   const setTokens = useAuthStore((state) => state.setTokens);
   const processed = useRef(false);
+
+  const checkMember = async (token) => {
+    try {
+      await apiClient.get('/api/members/info', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      navigate('/', { replace: true });
+    } catch {
+      navigate('/social/signup', { replace: true });
+    }
+  };
 
   useEffect(() => {
     if (processed.current) return;
@@ -19,6 +30,16 @@ export default function OAuthCallbackPage() {
 
     const accessToken = hashParams.get('accessToken');
     const refreshToken = hashParams.get('refreshToken');
+    const error = hashParams.get('error');
+
+    // 주소창에서 토큰 제거
+    window.history.replaceState(null, '', window.location.pathname);
+
+    if (error) {
+      openModal({ title: '오류', message: '소셜 로그인에 실패했습니다.', type: 'error' });
+      navigate('/login', { replace: true });
+      return;
+    }
 
     if (!accessToken || !refreshToken) {
       openModal({ title: '오류', message: '소셜 로그인 인증 실패했습니다.', type: 'error' });
@@ -29,18 +50,6 @@ export default function OAuthCallbackPage() {
     setTokens(accessToken, refreshToken);
     checkMember(accessToken);
   }, [navigate, setTokens]);
-
-  const checkMember = async (token) => {
-    try {
-      await apiClient.get('/api/members/info', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      navigate('/', { replace: true });
-    } catch {
-      // member 없음 → 닉네임 설정
-      navigate('/social/signup', { replace: true });
-    }
-  };
 
   return <div className="p-8 text-center">인증 완료 처리 중입니다...</div>;
 }
