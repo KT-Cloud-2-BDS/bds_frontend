@@ -25,9 +25,11 @@ export default function LoginPage() {
     }
   };
 
+  const envBase = import.meta.env.VITE_API_GATEWAY_URL;
+  const BASE_URL = envBase ? envBase : "http://localhost:8000";
+
   const handleNaverLogin = () => {
-    // 게이트웨이를 통해 OAuth2 인가 요청
-    window.location.href = '/oauth2/authorization/naver';
+    window.location.href = `${BASE_URL}/oauth2/authorization/naver`;
   };
 
   return (
