@@ -2,15 +2,17 @@
 import axios from 'axios';
 import useAuthStore from '../stores/useAuthStore';
 
+const API_BASE_URL = import.meta.env.VITE_API_GATEWAY_URL || '';
+
 const apiClient = axios.create({
-    baseURL: '',
+    baseURL: API_BASE_URL,
     headers: { 'Content-Type': 'application/json' },
 });
 
 // Request Interceptor
 apiClient.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('accessToken');
+        const token = useAuthStore.getState().accessToken;
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -39,17 +41,15 @@ apiClient.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
-        // 401이고, 재시도가 아닌 경우
         if (error.response?.status === 401 && !originalRequest._retry) {
-            // reissue 요청 자체가 실패한 경우는 로그아웃
-            if (originalRequest.url === '/api/auths/reissue') {
+            // refresh 요청 자체가 실패한 경우는 로그아웃
+            if (originalRequest.url === '/api/auths/token/refresh') {
                 useAuthStore.getState().logout();
                 window.location.href = '/login';
                 return Promise.reject(error);
             }
 
             if (isRefreshing) {
-                // 이미 재발급 중이면 큐에 대기
                 return new Promise((resolve, reject) => {
                     failedQueue.push({ resolve, reject });
                 }).then((token) => {
@@ -70,7 +70,8 @@ apiClient.interceptors.response.use(
             }
 
             try {
-                const res = await axios.post('/api/auths/reissue', null, {
+                // refresh 요청도 같은 baseURL 사용
+                const res = await axios.post(`${API_BASE_URL}/api/auths/token/refresh`, null, {
                     headers: { Authorization: `Bearer ${refreshToken}` },
                 });
 
@@ -96,6 +97,8 @@ apiClient.interceptors.response.use(
 );
 
 export default apiClient;
+
+// ─── API 함수들 ────────────────────────────────────────────
 
 export const getMyOrdersApi = async () => {
     const response = await apiClient.get('/api/orders');

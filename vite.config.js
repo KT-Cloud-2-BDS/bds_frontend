@@ -10,7 +10,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',  // Gateway 포트
+        target: 'http://localhost:8000',  // Gateway
         changeOrigin: true,
       },
       '/oauth2': {
@@ -21,6 +21,15 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true,
       },
+      '/ws': {
+        target: 'http://localhost:8082',  // chat-service
+        ws: true,
+        changeOrigin: true,
+      },
     },
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: false,
   },
 });
