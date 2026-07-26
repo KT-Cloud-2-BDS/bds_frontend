@@ -34,6 +34,16 @@ export default function InquiryChatPage() {
                 const roomRes = await apiClient.get(`/api/chat/Inquiries/${roomId}`);
                 setRoom(roomRes.data);
 
+                // 상대방의 lastReadMessageId로 readReceipt 초기화
+                const myIdNum = Number(localStorage.getItem('userId'));
+                const otherP = roomRes.data.participants?.find((p) => p.memberId !== myIdNum);
+                if (otherP) {
+                    setReadReceipt({
+                        userId: otherP.memberId,
+                        lastReadMessageId: otherP.membership?.lastReadMessageId ?? 0,
+                    });
+                }
+
                 // 메시지 이력 조회
                 const msgRes = await apiClient.get(`/api/chat/Inquiries/${roomId}/messages`);
                 const initialMessages = msgRes.data.messages || [];
@@ -71,7 +81,10 @@ export default function InquiryChatPage() {
                                 `/topic/chat.room.${roomId}.read`,
                                 (frame) => {
                                     const event = JSON.parse(frame.body);
-                                    setReadReceipt({ userId: event.userId, lastReadMessageId: event.lastReadMessageId });
+                                    const myIdNum = Number(localStorage.getItem('userId'));
+                                    if (event.userId !== myIdNum) {
+                                        setReadReceipt({ userId: event.userId, lastReadMessageId: event.lastReadMessageId });
+                                    }
                                 }
                             );
 
@@ -159,7 +172,7 @@ export default function InquiryChatPage() {
     if (!room) return null;
 
     const myId = Number(localStorage.getItem('userId'));
-    const otherParticipant = room.participants?.find((p) => p !== myId);
+    const otherParticipant = room.participants?.find((p) => p.memberId !== myId);
 
     // 상대방이 읽은 내 메시지 중 가장 마지막 messageId
     const lastReadMyMessageId = messages
@@ -177,7 +190,7 @@ export default function InquiryChatPage() {
                     <div>
                         <h2 className="font-bold text-lg">📩 1:1 문의</h2>
                         <p className="text-xs text-gray-400">
-                            상대방: 유저 {otherParticipant || '알 수 없음'}
+                            상대방: 유저 {otherParticipant?.memberId || '알 수 없음'}
                         </p>
                     </div>
                 </div>
@@ -214,7 +227,7 @@ export default function InquiryChatPage() {
                     }
 
                     return (
-                        <div key={msg.messageId || idx} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
+                        <div key={msg.messageId || idx} className={`flex items-end gap-1 ${isMine ? 'flex-row-reverse' : 'flex-row'}`}>
                             <div className={`max-w-xs px-4 py-2 rounded-lg ${
                                 msg.isDeleted
                                     ? 'bg-gray-200 text-gray-400 italic'
@@ -226,12 +239,16 @@ export default function InquiryChatPage() {
                                     <p className="text-xs text-gray-500 mb-1">유저 {msg.senderId}</p>
                                 )}
                                 <p className="text-sm">{msg.isDeleted ? '삭제된 메시지입니다' : msg.content}</p>
-                                <p className="text-xs opacity-60 mt-1">
-                                    {new Date(msg.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
-                                </p>
-                                {isMine && readReceipt.userId && readReceipt.userId !== myId && msg.messageId === lastReadMyMessageId && (
-                                    <p className="text-xs text-right mt-0.5 opacity-70">읽음</p>
+                            </div>
+                            <div className={`flex flex-col shrink-0 text-xs text-gray-400 ${isMine ? 'items-end' : 'items-start'}`}>
+                                {isMine && !msg.isDeleted && msg.messageId && readReceipt.userId && readReceipt.userId !== myId && (
+                                    msg.messageId > readReceipt.lastReadMessageId
+                                        ? <span>1</span>
+                                        : msg.messageId === lastReadMyMessageId && lastReadMyMessageId > 0
+                                            ? <span>읽음</span>
+                                            : null
                                 )}
+                                <span>{new Date(msg.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</span>
                             </div>
                         </div>
                     );
