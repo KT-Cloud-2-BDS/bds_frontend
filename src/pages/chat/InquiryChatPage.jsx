@@ -12,6 +12,9 @@ const getMyId = () => {
     return Number(payload?.sub);
 };
 
+const getSenderName = (senderId, createdBy) =>
+    Number(senderId) === Number(createdBy) ? '관리자' : `유저${senderId}`;
+
 export default function InquiryChatPage() {
     const { roomId } = useParams();
     const navigate = useNavigate();
@@ -203,7 +206,12 @@ export default function InquiryChatPage() {
                     <div>
                         <h2 className="font-bold text-lg">📩 1:1 문의</h2>
                         <p className="text-xs text-gray-400">
-                            상대방: 유저 {otherParticipant?.memberId || '알 수 없음'}
+                            상대방:{' '}
+                            {otherParticipant
+                                ? (Number(otherParticipant.memberId) === Number(room.createdBy)
+                                    ? `관리자:유저${otherParticipant.memberId}`
+                                    : `유저${otherParticipant.memberId}`)
+                                : '알 수 없음'}
                         </p>
                     </div>
                 </div>
@@ -249,7 +257,7 @@ export default function InquiryChatPage() {
                                         : 'bg-white border'
                             }`}>
                                 {!isMine && !msg.isDeleted && (
-                                    <p className="text-xs text-gray-500 mb-1">유저 {msg.senderId}</p>
+                                    <p className="text-xs text-gray-500 mb-1">{getSenderName(msg.senderId, room.createdBy)}</p>
                                 )}
                                 <p className="text-sm">{msg.isDeleted ? '삭제된 메시지입니다' : msg.content}</p>
                             </div>
