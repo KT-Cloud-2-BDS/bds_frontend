@@ -28,12 +28,21 @@ export default function FundingChatPage() {
                 const roomRes = await apiClient.get(`/api/chat/fundings/${fundingId}`);
                 setRoom(roomRes.data);
 
-                // 메시지 이력 조회
-                const msgRes = await apiClient.get(`/api/chat/fundings/${roomRes.data.roomId}/messages`);
-                setMessages(msgRes.data.messages || []);
+                // 메시지 이력 조회 (auth required - 로그인 상태에서만)
+                const token = accessToken || localStorage.getItem('accessToken') || null;
+                let initialMessages = [];
+                if (token) {
+                    try {
+                        const msgRes = await apiClient.get(`/api/chat/fundings/${roomRes.data.roomId}/messages`);
+                        initialMessages = msgRes.data.messages || [];
+                        setMessages(initialMessages);
+                    } catch (err) {
+                        console.warn('메시지 이력 ���회 실패:', err);
+                    }
+                }
+                const lastMsgId = initialMessages.reduce((max, m) => (m.messageId > max ? m.messageId : max), 0) || null;
 
                 // WebSocket 연결
-                const token = accessToken || localStorage.getItem('accessToken') || null;
                 const client = connectStomp({
                     token,
                     onConnect: (stompClient) => {
@@ -49,11 +58,12 @@ export default function FundingChatPage() {
                                     messageId: body.seq || body.messageId,
                                     senderId: body.senderId,
                                     content: body.content,
-                                    createdAt: body.timestamp || new Date().toISOString(),
+                                    createdAt: body.sentAt || new Date().toISOString(),
                                     roomId: roomRes.data.roomId,
                                     isDeleted: false,
                                 }]);
-                            }
+                            },
+                            lastMsgId ? { lastMessageId: String(lastMsgId) } : {}
                         );
 
                         // 에러 구독 (로그인 상태에서만)
@@ -135,7 +145,7 @@ export default function FundingChatPage() {
                     <p className="text-center text-gray-400 py-8">아직 메시지가 없습니다. 첫 메시지를 보내보세요!</p>
                 )}
                 {messages.map((msg, idx) => {
-                    const isMine = msg.senderId === Number(localStorage.getItem('userId'));
+                    const isMine = Number(msg.senderId) === Number(localStorage.getItem('userId'));
                     return (
                         <div key={msg.messageId || idx} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
                             <div className={`max-w-xs px-4 py-2 rounded-lg ${

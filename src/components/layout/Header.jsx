@@ -22,6 +22,7 @@ export default function Header() {
                         <Link to="/notifications" className="text-gray-600 hover:text-teal-600">🔔 알림</Link>
                         <Link to="/wallet" className="text-gray-600 hover:text-teal-600">💰 월렛</Link>
                         <Link to="/orders" className="text-gray-600 hover:text-teal-600">내 주문</Link>
+                        <Link to="/chat/inquiries" className="text-gray-600 hover:text-teal-600">💬 채팅</Link>
                         <Link to="/mypage" className="text-gray-600 hover:text-teal-600">마이페이지</Link>
                         <button onClick={handleLogout} className="text-gray-400 hover:text-red-500 cursor-pointer">
                             로그아웃

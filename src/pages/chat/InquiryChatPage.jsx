@@ -36,7 +36,9 @@ export default function InquiryChatPage() {
 
                 // 메시지 이력 조회
                 const msgRes = await apiClient.get(`/api/chat/Inquiries/${roomId}/messages`);
-                setMessages(msgRes.data.messages || []);
+                const initialMessages = msgRes.data.messages || [];
+                setMessages(initialMessages);
+                const lastMsgId = initialMessages.reduce((max, m) => (m.messageId > max ? m.messageId : max), 0) || null;
 
                 // WebSocket 연결
                 const token = localStorage.getItem('accessToken');
@@ -55,11 +57,12 @@ export default function InquiryChatPage() {
                                     messageId: body.seq || body.messageId,
                                     senderId: body.senderId,
                                     content: body.content,
-                                    createdAt: body.timestamp || new Date().toISOString(),
+                                    createdAt: body.sentAt || new Date().toISOString(),
                                     roomId: Number(roomId),
                                     isDeleted: false,
                                 }]);
-                            }
+                            },
+                            lastMsgId ? { lastMessageId: String(lastMsgId) } : {}
                         );
 
                         // 읽음 이벤트 구독 + 에러 구독 (로그인 상태에서만)
@@ -160,7 +163,7 @@ export default function InquiryChatPage() {
 
     // 상대방이 읽은 내 메시지 중 가장 마지막 messageId
     const lastReadMyMessageId = messages
-        .filter((m) => m.senderId === myId && m.messageId && m.messageId <= readReceipt.lastReadMessageId)
+        .filter((m) => Number(m.senderId) === myId && m.messageId && m.messageId <= readReceipt.lastReadMessageId)
         .reduce((max, m) => Math.max(max, m.messageId), 0);
 
     return (
@@ -197,7 +200,7 @@ export default function InquiryChatPage() {
                     <p className="text-center text-gray-400 py-8">아직 메시지가 없습니다. 문의 내용을 입력해보세요!</p>
                 )}
                 {messages.map((msg, idx) => {
-                    const isMine = msg.senderId === myId;
+                    const isMine = Number(msg.senderId) === myId;
                     const isSystem = msg.senderId === null;
 
                     if (isSystem) {

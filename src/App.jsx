@@ -26,6 +26,7 @@ import OrderReservedResultPage from "./pages/order/OrderReservedResultPage.jsx";
 import FundingChatPage from './pages/funding/FundingChatPage';
 import InquiryChatPage from './pages/chat/InquiryChatPage';
 import InquiryListPage from "./pages/chat/InquiryListPage.jsx";
+import ChatHistoryPage from './pages/chat/ChatHistoryPage';
 import FundingCreatePage from './pages/funding/FundingCreatePage';
 import ResetPasswordPage from './pages/user/ResetPasswordPage';
 
@@ -64,6 +65,7 @@ export default function App() {
                 <Route path="/fundings/:id/chat" element={<FundingChatPage />} />
                 <Route path="/chat/inquiries/:roomId" element={<ProtectedRoute><InquiryChatPage /></ProtectedRoute>} />
                 <Route path="/chat/inquiries" element={<ProtectedRoute><InquiryListPage /></ProtectedRoute>} />
+                <Route path="/chat/history" element={<ProtectedRoute><ChatHistoryPage /></ProtectedRoute>} />
                 <Route path="/fundings/create" element={<ProtectedRoute><FundingCreatePage /></ProtectedRoute>} />
             </Routes>
 
