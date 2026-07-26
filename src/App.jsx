@@ -61,7 +61,7 @@ export default function App() {
                 <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
                 <Route path="/mypage" element={<ProtectedRoute><MyPage /></ProtectedRoute>} />
                 <Route path="/reset-password" element={<GuestRoute><ResetPasswordPage /></GuestRoute>} />
-                <Route path="/fundings/:id/chat" element={<ProtectedRoute><FundingChatPage /></ProtectedRoute>} />
+                <Route path="/fundings/:id/chat" element={<FundingChatPage />} />
                 <Route path="/chat/inquiries/:roomId" element={<ProtectedRoute><InquiryChatPage /></ProtectedRoute>} />
                 <Route path="/chat/inquiries" element={<ProtectedRoute><InquiryListPage /></ProtectedRoute>} />
                 <Route path="/fundings/create" element={<ProtectedRoute><FundingCreatePage /></ProtectedRoute>} />

@@ -13,9 +13,19 @@ export default function InquiryChatPage() {
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(true);
     const [connected, setConnected] = useState(false);
+    const [readReceipt, setReadReceipt] = useState({ userId: null, lastReadMessageId: 0 });
     const stompRef = useRef(null);
     const messagesEndRef = useRef(null);
     const subscriptionRef = useRef(null);
+    const readSubRef = useRef(null);
+    const errorSubRef = useRef(null);
+    const intervalRef = useRef(null);
+    const messagesRef = useRef([]);
+
+    // messagesRef를 최신 messages와 동기화 (interval 내 stale closure 방지)
+    useEffect(() => {
+        messagesRef.current = messages;
+    }, [messages]);
 
     useEffect(() => {
         const initChat = async () => {
@@ -51,6 +61,37 @@ export default function InquiryChatPage() {
                                 }]);
                             }
                         );
+
+                        // 읽음 이벤트 구독 + 에러 구독 (로그인 상태에서만)
+                        if (token) {
+                            readSubRef.current = stompClient.subscribe(
+                                `/topic/chat.room.${roomId}.read`,
+                                (frame) => {
+                                    const event = JSON.parse(frame.body);
+                                    setReadReceipt({ userId: event.userId, lastReadMessageId: event.lastReadMessageId });
+                                }
+                            );
+
+                            errorSubRef.current = stompClient.subscribe(
+                                '/user/queue/error',
+                                (frame) => {
+                                    console.error('[STOMP] 에러:', JSON.parse(frame.body));
+                                }
+                            );
+
+                            // 일정 시간마다 가장 큰 messageId를 read로 전송
+                            intervalRef.current = setInterval(() => {
+                                const msgs = messagesRef.current;
+                                if (!msgs.length || !stompRef.current) return;
+                                const maxId = Math.max(...msgs.map((m) => m.messageId).filter(Boolean));
+                                if (maxId > 0) {
+                                    stompRef.current.publish({
+                                        destination: `/app/chat/read/${roomId}`,
+                                        body: JSON.stringify({ lastReadMessageId: maxId }),
+                                    });
+                                }
+                            }, 5000);
+                        }
                     },
                     onError: (err) => {
                         console.error('STOMP 연결 실패:', err);
@@ -69,6 +110,9 @@ export default function InquiryChatPage() {
 
         return () => {
             if (subscriptionRef.current) subscriptionRef.current.unsubscribe();
+            if (readSubRef.current) readSubRef.current.unsubscribe();
+            if (errorSubRef.current) errorSubRef.current.unsubscribe();
+            if (intervalRef.current) clearInterval(intervalRef.current);
             disconnectStomp();
         };
     }, [roomId]);
@@ -113,6 +157,11 @@ export default function InquiryChatPage() {
 
     const myId = Number(localStorage.getItem('userId'));
     const otherParticipant = room.participants?.find((p) => p !== myId);
+
+    // 상대방이 읽은 내 메시지 중 가장 마지막 messageId
+    const lastReadMyMessageId = messages
+        .filter((m) => m.senderId === myId && m.messageId && m.messageId <= readReceipt.lastReadMessageId)
+        .reduce((max, m) => Math.max(max, m.messageId), 0);
 
     return (
         <div className="max-w-2xl mx-auto h-[calc(100vh-80px)] flex flex-col">
@@ -177,6 +226,9 @@ export default function InquiryChatPage() {
                                 <p className="text-xs opacity-60 mt-1">
                                     {new Date(msg.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
                                 </p>
+                                {isMine && readReceipt.userId && readReceipt.userId !== myId && msg.messageId === lastReadMyMessageId && (
+                                    <p className="text-xs text-right mt-0.5 opacity-70">읽음</p>
+                                )}
                             </div>
                         </div>
                     );

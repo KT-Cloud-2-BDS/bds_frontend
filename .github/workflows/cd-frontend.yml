@@ -25,7 +25,7 @@ jobs:
       - name: Install & Build
         env:
           VITE_API_GATEWAY_URL: https://api.jubg.shop
-          VITE_WS_GATEWAY_URL: wss://api.jubg.shop/ws/chat
+          VITE_WS_GATEWAY_URL: wss://api.jubg.shop
         run: |
           yarn install --frozen-lockfile
           yarn build              # 결과물: dist/

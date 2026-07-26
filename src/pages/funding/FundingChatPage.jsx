@@ -1,13 +1,15 @@
 // src/pages/funding/FundingChatPage.jsx
 import { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import apiClient from '../../api/apiClient';
 import { connectStomp, disconnectStomp } from '../../api/stompClient';
+import useAuthStore from '../../stores/useAuthStore';
 import { v4 as uuidv4 } from 'uuid';
 
 export default function FundingChatPage() {
     const { id: fundingId } = useParams();
     const navigate = useNavigate();
+    const { accessToken } = useAuthStore();
     const [room, setRoom] = useState(null);
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
@@ -16,6 +18,7 @@ export default function FundingChatPage() {
     const stompRef = useRef(null);
     const messagesEndRef = useRef(null);
     const subscriptionRef = useRef(null);
+    const errorSubRef = useRef(null);
 
     // 1. 채팅방 정보 조회
     useEffect(() => {
@@ -30,7 +33,7 @@ export default function FundingChatPage() {
                 setMessages(msgRes.data.messages || []);
 
                 // WebSocket 연결
-                const token = localStorage.getItem('accessToken');
+                const token = accessToken || localStorage.getItem('accessToken') || null;
                 const client = connectStomp({
                     token,
                     onConnect: (stompClient) => {
@@ -52,6 +55,16 @@ export default function FundingChatPage() {
                                 }]);
                             }
                         );
+
+                        // 에러 구독 (로그인 상태에서만)
+                        if (token) {
+                            errorSubRef.current = stompClient.subscribe(
+                                '/user/queue/error',
+                                (frame) => {
+                                    console.error('[STOMP] 에러:', JSON.parse(frame.body));
+                                }
+                            );
+                        }
                     },
                     onError: (err) => {
                         console.error('STOMP 연결 실패:', err);
@@ -70,6 +83,7 @@ export default function FundingChatPage() {
 
         return () => {
             if (subscriptionRef.current) subscriptionRef.current.unsubscribe();
+            if (errorSubRef.current) errorSubRef.current.unsubscribe();
             disconnectStomp();
         };
     }, [fundingId]);
@@ -146,23 +160,30 @@ export default function FundingChatPage() {
             </div>
 
             {/* 입력창 */}
-            <form onSubmit={handleSend} className="border-t p-4 bg-white flex gap-2">
-                <input
-                    type="text"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder="메시지를 입력하세요..."
-                    className="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    disabled={!connected}
-                />
-                <button
-                    type="submit"
-                    disabled={!connected || !input.trim()}
-                    className="bg-teal-500 text-white px-6 py-2 rounded-lg font-bold hover:bg-teal-600 disabled:bg-gray-300"
-                >
-                    전송
-                </button>
-            </form>
+            {accessToken ? (
+                <form onSubmit={handleSend} className="border-t p-4 bg-white flex gap-2">
+                    <input
+                        type="text"
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        placeholder="메시지를 입력하세요..."
+                        className="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        disabled={!connected}
+                    />
+                    <button
+                        type="submit"
+                        disabled={!connected || !input.trim()}
+                        className="bg-teal-500 text-white px-6 py-2 rounded-lg font-bold hover:bg-teal-600 disabled:bg-gray-300"
+                    >
+                        전송
+                    </button>
+                </form>
+            ) : (
+                <div className="border-t p-4 bg-gray-50 text-center space-y-1">
+                    <p className="text-sm text-gray-500">채팅에 참여하려면 로그인이 필요합니다.</p>
+                    <Link to="/login" className="text-teal-600 font-bold text-sm hover:underline">로그인하기 →</Link>
+                </div>
+            )}
         </div>
     );
 }

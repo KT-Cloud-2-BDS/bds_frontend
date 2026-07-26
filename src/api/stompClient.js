@@ -8,9 +8,7 @@ export const connectStomp = ({ token, onConnect, onError }) => {
 
     stompClient = new Client({
         brokerURL: wsUrl,
-        connectHeaders: {
-            Authorization: `Bearer ${token}`,
-        },
+        connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
         reconnectDelay: 5000,
         heartbeatIncoming: 10000,
         heartbeatOutgoing: 10000,
