@@ -1,18 +1,68 @@
 // src/pages/chat/InquiryListPage.jsx
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../../api/apiClient';
+import { connectStomp, addSubscription, removeSubscription } from '../../api/stompClient';
 
 export default function InquiryListPage() {
     const navigate = useNavigate();
     const [rooms, setRooms] = useState([]);
     const [loading, setLoading] = useState(true);
+    const roomSubsRef = useRef([]);
 
     useEffect(() => {
-        apiClient.get('/api/chat/Inquiries')
-            .then((res) => setRooms(res.data.rooms || []))
-            .catch((err) => console.error('문의방 목록 조회 실패:', err))
-            .finally(() => setLoading(false));
+        const init = async () => {
+            try {
+                const res = await apiClient.get('/api/chat/Inquiries');
+                const roomList = res.data.rooms || [];
+                setRooms(roomList);
+
+                const token = localStorage.getItem('accessToken');
+                if (!token || roomList.length === 0) return;
+
+                connectStomp({
+                    token,
+                    onConnect: (stompClient) => {
+                        roomList.forEach((room) => {
+                            const sub = stompClient.subscribe(
+                                `/topic/chat.room.${room.roomId}`,
+                                (message) => {
+                                    const body = JSON.parse(message.body);
+                                    setRooms((prev) => prev.map((r) => {
+                                        if (r.roomId !== room.roomId) return r;
+                                        return {
+                                            ...r,
+                                            lastMessage: {
+                                                content: body.content,
+                                                createdAt: body.sentAt || new Date().toISOString(),
+                                            },
+                                            unreadCount: (r.unreadCount || 0) + 1,
+                                        };
+                                    }));
+                                }
+                            );
+                            const key = `room-${room.roomId}`;
+                            addSubscription(key, sub);
+                            roomSubsRef.current.push(key);
+                        });
+                    },
+                    onError: (err) => {
+                        console.error('STOMP 연결 실패:', err);
+                    },
+                });
+            } catch (err) {
+                console.error('문의방 목록 조회 실패:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        init();
+
+        return () => {
+            roomSubsRef.current.forEach((key) => removeSubscription(key));
+            roomSubsRef.current = [];
+        };
     }, []);
 
     if (loading) return <div className="text-center py-12">로딩 중...</div>;
@@ -46,8 +96,8 @@ export default function InquiryListPage() {
                                     </p>
                                     {room.unreadCount > 0 && (
                                         <span className="inline-block mt-1 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
-                      {room.unreadCount}
-                    </span>
+                                            {room.unreadCount}
+                                        </span>
                                     )}
                                 </div>
                             </div>

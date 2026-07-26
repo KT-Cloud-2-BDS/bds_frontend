@@ -2,8 +2,15 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../../api/apiClient';
-import { connectStomp, disconnectStomp } from '../../api/stompClient';
+import { connectStomp, addSubscription, removeSubscription, unsubscribeAllExcept } from '../../api/stompClient';
+import { parseJwt } from '../../utils/parseJwt';
 import { v4 as uuidv4 } from 'uuid';
+
+const getMyId = () => {
+    const token = localStorage.getItem('accessToken');
+    const payload = parseJwt(token);
+    return Number(payload?.sub);
+};
 
 export default function InquiryChatPage() {
     const { roomId } = useParams();
@@ -35,7 +42,7 @@ export default function InquiryChatPage() {
                 setRoom(roomRes.data);
 
                 // 상대방의 lastReadMessageId로 readReceipt 초기화
-                const myIdNum = Number(localStorage.getItem('userId'));
+                const myIdNum = getMyId();
                 const otherP = roomRes.data.participants?.find((p) => p.memberId !== myIdNum);
                 if (otherP) {
                     setReadReceipt({
@@ -46,7 +53,8 @@ export default function InquiryChatPage() {
 
                 // 메시지 이력 조회
                 const msgRes = await apiClient.get(`/api/chat/Inquiries/${roomId}/messages`);
-                const initialMessages = msgRes.data.messages || [];
+                const initialMessages = (msgRes.data.messages || [])
+                    .sort((a, b) => (a.messageId || 0) - (b.messageId || 0));
                 setMessages(initialMessages);
                 const lastMsgId = initialMessages.reduce((max, m) => (m.messageId > max ? m.messageId : max), 0) || null;
 
@@ -57,6 +65,9 @@ export default function InquiryChatPage() {
                     onConnect: (stompClient) => {
                         setConnected(true);
                         stompRef.current = stompClient;
+
+                        // 다른 채팅방 구독 모두 해제 후 현재 방만 구독
+                        unsubscribeAllExcept();
 
                         // 메시지 구독
                         subscriptionRef.current = stompClient.subscribe(
@@ -74,6 +85,7 @@ export default function InquiryChatPage() {
                             },
                             lastMsgId ? { lastMessageId: String(lastMsgId) } : {}
                         );
+                        addSubscription('chat-msg', subscriptionRef.current);
 
                         // 읽음 이벤트 구독 + 에러 구독 (로그인 상태에서만)
                         if (token) {
@@ -81,12 +93,13 @@ export default function InquiryChatPage() {
                                 `/topic/chat.room.${roomId}.read`,
                                 (frame) => {
                                     const event = JSON.parse(frame.body);
-                                    const myIdNum = Number(localStorage.getItem('userId'));
+                                    const myIdNum = getMyId();
                                     if (event.userId !== myIdNum) {
                                         setReadReceipt({ userId: event.userId, lastReadMessageId: event.lastReadMessageId });
                                     }
                                 }
                             );
+                            addSubscription('chat-read', readSubRef.current);
 
                             errorSubRef.current = stompClient.subscribe(
                                 '/user/queue/error',
@@ -94,6 +107,7 @@ export default function InquiryChatPage() {
                                     console.error('[STOMP] 에러:', JSON.parse(frame.body));
                                 }
                             );
+                            addSubscription('chat-error', errorSubRef.current);
 
                             // 일정 시간마다 가장 큰 messageId를 read로 전송
                             intervalRef.current = setInterval(() => {
@@ -129,7 +143,6 @@ export default function InquiryChatPage() {
             if (readSubRef.current) readSubRef.current.unsubscribe();
             if (errorSubRef.current) errorSubRef.current.unsubscribe();
             if (intervalRef.current) clearInterval(intervalRef.current);
-            disconnectStomp();
         };
     }, [roomId]);
 
@@ -171,7 +184,7 @@ export default function InquiryChatPage() {
     if (loading) return <div className="text-center py-12">채팅방 로딩 중...</div>;
     if (!room) return null;
 
-    const myId = Number(localStorage.getItem('userId'));
+    const myId = getMyId();
     const otherParticipant = room.participants?.find((p) => p.memberId !== myId);
 
     // 상대방이 읽은 내 메시지 중 가장 마지막 messageId
