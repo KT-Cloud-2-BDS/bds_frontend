@@ -24,7 +24,7 @@ export default function BillingPage() {
         Promise.all([
             apiClient.get(`/api/orders/${orderId}`),
             apiClient.get(`/api/fundings/${fundingId}`),
-            apiClient.get('/api/payment/wallet').catch(() => ({ data: null })),
+            apiClient.get('/api/payments/wallet').catch(() => ({ data: null })),
         ])
             .then(([billingRes, fundingRes, walletRes]) => {
                 setBilling(billingRes.data);

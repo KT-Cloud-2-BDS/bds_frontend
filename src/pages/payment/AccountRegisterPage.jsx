@@ -26,7 +26,7 @@ export default function AccountRegisterPage() {
     const [step, setStep] = useState(1); // 1: 계좌입력, 2: 인증코드 입력
     const [loading, setLoading] = useState(false);
 
-    // 1단계: 계좌 등록 요청 (POST /api/payment/accounts)
+    // 1단계: 계좌 등록 요청 (POST /api/payments/accounts)
     const handleRegister = async () => {
         if (!bankCode || !accountNumber || !holderName) {
             openModal({ title: '안내', message: '은행, 계좌번호, 예금주명을 모두 입력해주세요.', type: 'info' });
@@ -35,7 +35,7 @@ export default function AccountRegisterPage() {
 
         setLoading(true);
         try {
-            await apiClient.post('/api/payment/accounts', {
+            await apiClient.post('/api/payments/accounts', {
                 bankCode,
                 accountNumber,
                 holderName,
@@ -49,7 +49,7 @@ export default function AccountRegisterPage() {
         }
     };
 
-    // 2단계: 인증코드 확인 (POST /api/payment/accounts/verify)
+    // 2단계: 인증코드 확인 (POST /api/payments/accounts/verify)
     const handleVerify = async () => {
         if (!verifyCode) {
             openModal({ title: '안내', message: '인증코드를 입력해주세요.', type: 'info' });
@@ -58,7 +58,7 @@ export default function AccountRegisterPage() {
 
         setLoading(true);
         try {
-            await apiClient.post('/api/payment/accounts/verify', {
+            await apiClient.post('/api/payments/accounts/verify', {
                 code: verifyCode,
             });
             openModal({ title: '성공', message: '계좌 연결이 완료되었습니다!', type: 'success' });

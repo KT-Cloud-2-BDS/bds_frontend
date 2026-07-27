@@ -48,7 +48,7 @@ export default function OrderDetailPage() {
         setPaying(true);
         try {
             // 1. 잔고 확인
-            const walletRes = await apiClient.get('/api/payment/wallet');
+            const walletRes = await apiClient.get('/api/payments/wallet');
             const balance = walletRes.data?.balance || 0;
             const amount = order.totalBillingAmount;
 

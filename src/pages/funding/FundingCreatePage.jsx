@@ -18,7 +18,7 @@ const badgeTypes = [
     name: "얼리버드",
   },
   {
-    code: null,
+    code: "",
     name: "기본",
   },
 ];
@@ -70,7 +70,7 @@ const generateRandomFunding = () => {
 
   return {
     title: randomTitle,
-    goalAmount: String((Math.floor(Math.random() * 50) + 5) * 100000), // 50만~550만
+    goalAmount: String((Math.floor(Math.random() * 50) + 5) * 100000),
     startAt: formatDateTime(startAt),
     holdTo: formatDateTime(holdTo),
     payAt: formatDateTime(payAt),
@@ -79,7 +79,7 @@ const generateRandomFunding = () => {
       name,
       description: `${name} 상품 설명입니다.`,
       limitQty: String((idx + 1) * 50),
-      badgeType: badgeTypes[idx],
+      badgeType: badgeTypes[idx].code || "",
       price: String((idx + 1) * 15000),
       offerAt: formatDateTime(startAt),
       shippingCharge: String(idx === 0 ? 0 : 3000),
@@ -380,7 +380,7 @@ export default function FundingCreatePage() {
                       className="w-full border rounded-lg px-4 py-2"
                   >
                     {badgeTypes.map((type) => (
-                        <option key={type.code} value={type.code}>
+                        <option key={type.code || "default"} value={type.code}>
                           {type.name}
                         </option>
                     ))}

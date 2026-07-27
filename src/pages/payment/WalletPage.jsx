@@ -21,7 +21,7 @@ export default function WalletPage() {
     const fetchWallet = async () => {
         setLoading(true);
         try {
-            const res = await apiClient.get('/api/payment/wallet');
+            const res = await apiClient.get('/api/payments/wallet');
             setWallet(res.data);
         } catch (err) {
             if (err.response?.status === 404 || err.response?.status === 500) {
@@ -35,7 +35,7 @@ export default function WalletPage() {
     const handleCreateWallet = async () => {
         setCreating(true);
         try {
-            const res = await apiClient.post('/api/payment/wallet');
+            const res = await apiClient.post('/api/payments/wallet');
             setWallet(res.data);
             openModal({ title: '완료', message: '월렛이 생성되었습니다!', type: 'success' });
         } catch (err) {
@@ -53,7 +53,7 @@ export default function WalletPage() {
         }
         setDepositing(true);
         try {
-            await apiClient.post('/api/payment/deposit', { amount });
+            await apiClient.post('/api/payments/deposit', { amount });
             openModal({ title: '충전 완료', message: `${amount.toLocaleString()}원이 충전되었습니다.`, type: 'success' });
             setDepositAmount('');
             fetchWallet();
@@ -72,7 +72,7 @@ export default function WalletPage() {
         }
         setWithdrawing(true);
         try {
-            await apiClient.post('/api/payment/withdraw', { amount });
+            await apiClient.post('/api/payments/withdraw', { amount });
             openModal({ title: '출금 완료', message: `${amount.toLocaleString()}원이 출금되었습니다.`, type: 'success' });
             setWithdrawAmount('');
             fetchWallet();

@@ -7,7 +7,7 @@ export default function WalletHistoryPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        apiClient.get('/api/payment/history')
+        apiClient.get('/api/payments/history')
             .then((res) => setHistory(res.data?.content || res.data || []))
             .catch((err) => console.error('거래 내역 조회 실패:', err))
             .finally(() => setLoading(false));
