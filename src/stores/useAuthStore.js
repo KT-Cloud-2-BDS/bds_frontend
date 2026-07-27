@@ -2,6 +2,8 @@
 import { create } from 'zustand';
 import axios from 'axios';
 
+const API_BASE_URL = import.meta.env.VITE_API_GATEWAY_URL || '';
+
 const useAuthStore = create((set, get) => ({
   accessToken: localStorage.getItem('accessToken') || null,
   refreshToken: localStorage.getItem('refreshToken') || null,
@@ -21,7 +23,7 @@ const useAuthStore = create((set, get) => ({
     // 서버에 로그아웃 요청 (실패해도 로컬은 정리)
     try {
       if (accessToken) {
-        await axios.post('/api/auths/logout', null, {
+        await axios.post(`${API_BASE_URL}/api/auths/logout`, null, {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
       }
