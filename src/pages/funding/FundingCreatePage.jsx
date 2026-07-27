@@ -176,6 +176,11 @@ export default function FundingCreatePage() {
     }));
   };
 
+  const toUTC = (localDateTimeStr) => {
+    return new Date(localDateTimeStr).toISOString().slice(0, 19);
+  };
+
+
   // 리워드 삭제
   const removeReward = (idx) => {
     setForm((prev) => ({
@@ -193,9 +198,9 @@ export default function FundingCreatePage() {
       const payload = {
         title: form.title,
         goalAmount: Number(form.goalAmount),
-        startAt: form.startAt + ":00",
-        holdTo: form.holdTo + ":00",
-        payAt: form.payAt + ":00",
+        startAt: toUTC(form.startAt),
+        holdTo: toUTC(form.holdTo),
+        payAt: toUTC(form.payAt),
         type: form.type,
         rewards: form.rewards.map((r) => ({
           name: r.name,
@@ -203,7 +208,7 @@ export default function FundingCreatePage() {
           limitQty: Number(r.limitQty),
           badgeType: r.badgeType || null,
           price: Number(r.price),
-          offerAt: r.offerAt + ":00",
+          offerAt: toUTC(r.offerAt),
           shippingCharge: Number(r.shippingCharge),
         })),
       };

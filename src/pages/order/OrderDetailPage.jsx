@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import apiClient from '../../api/apiClient.js';
 import useModalStore from '../../stores/useModalStore.js';
+import {toKoreanTime} from "../../utils/formatDateTime.js";
 
 const STATUS_LABELS = {
     PENDING: '결제 대기',
@@ -196,7 +197,7 @@ export default function OrderDetailPage() {
                             <p className="mt-2 font-mono font-bold text-yellow-800">
                                 ⏰ 남은 시간: {getTimeRemaining()}
                                 <span className="font-normal text-yellow-600 ml-2">
-                                    (기한: {new Date(order.expiresAt).toLocaleString('ko-KR')})
+                                    (기한: {toKoreanTime(order.expiresAt)})
                                 </span>
                             </p>
                         </>
@@ -260,12 +261,12 @@ export default function OrderDetailPage() {
                 </div>
                 <div className="flex justify-between">
                     <span className="text-gray-500">주문일시</span>
-                    <span>{new Date(order.fundingDate).toLocaleString('ko-KR')}</span>
+                    <span>{toKoreanTime(order.fundingDate)}</span>
                 </div>
                 {order.canceledAt && (
                     <div className="flex justify-between">
                         <span className="text-gray-500">취소일시</span>
-                        <span className="text-red-500">{new Date(order.canceledAt).toLocaleString('ko-KR')}</span>
+                        <span className="text-red-500">{toKoreanTime(order.canceledAt)}</span>
                     </div>
                 )}
             </div>

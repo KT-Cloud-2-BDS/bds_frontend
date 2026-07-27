@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/apiClient';
+import {toKoreanTime} from "../utils/formatDateTime.js";
 
 export default function NotificationsPage() {
     const navigate = useNavigate();
@@ -65,7 +66,7 @@ export default function NotificationsPage() {
                                 )}
                             </div>
                             <p className="text-xs text-gray-400 mt-2">
-                                {[noti.targetId, noti.createdAt && new Date(noti.createdAt).toLocaleString('ko-KR')]
+                                {[noti.targetId, noti.createdAt && toKoreanTime(noti.createdAt)]
                                     .filter(Boolean)
                                     .join(' · ')}
                             </p>

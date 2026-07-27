@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import apiClient from '../../api/apiClient.js';
 import useModalStore from '../../stores/useModalStore.js';
+import {toKoreanTime} from "../../utils/formatDateTime.js";
 
 export default function BillingPage() {
     const { fundingId, orderId } = useParams();
@@ -214,7 +215,7 @@ export default function BillingPage() {
             {/* 만료 시간 */}
             {billing.expiresAt && (
                 <p className="text-xs text-red-500 text-center">
-                    ⏰ 이 주문서는 {new Date(billing.expiresAt).toLocaleString('ko-KR')}까지 유효합니다.
+                    ⏰ 이 주문서는 {toKoreanTime(billing.expiresAt)}까지 유효합니다.
                 </p>
             )}
 

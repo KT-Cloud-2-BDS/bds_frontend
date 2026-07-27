@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import apiClient from '../../api/apiClient.js';
+import { toKoreanTime } from '../../utils/formatDateTime';
 
 const STATUS_LABELS = {
     PENDING: '결제 대기',
@@ -58,7 +59,7 @@ export default function MyOrdersPage() {
                                     <p className="font-bold text-base truncate">{order.title}</p>
                                     <p className="text-xs text-gray-400 font-mono mt-1">{order.orderNo}</p>
                                     <p className="text-xs text-gray-400 mt-1">
-                                        {new Date(order.fundingDate).toLocaleString('ko-KR')}
+                                        {toKoreanTime(order.fundingDate)}
                                     </p>
                                     {/* PENDING 상태일 때 결제 필요 표시 */}
                                     {order.orderStatus === 'PENDING' && (

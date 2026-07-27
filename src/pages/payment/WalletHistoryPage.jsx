@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import apiClient from '../../api/apiClient.js';
+import {toKoreanTime} from "../../utils/formatDateTime.js";
 
 export default function WalletHistoryPage() {
     const [history, setHistory] = useState([]);
@@ -31,7 +32,7 @@ export default function WalletHistoryPage() {
                             <div>
                                 <p className="font-medium text-sm">{item.description || item.reason}</p>
                                 <p className="text-xs text-gray-400">
-                                    {item.createdAt ? new Date(item.createdAt).toLocaleString('ko-KR') : ''}
+                                    {item.createdAt ? toKoreanTime(item.createdAt) : ''}
                                 </p>
                             </div>
                             <div className="text-right">
