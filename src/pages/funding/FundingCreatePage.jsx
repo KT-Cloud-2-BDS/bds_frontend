@@ -1,9 +1,27 @@
-// src/pages/funding/FundingCreatePage.jsx
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../../api/apiClient";
 import useModalStore from "../../stores/useModalStore";
 import { parseJwt } from "../../utils/parseJwt";
+
+const badgeTypes = [
+  {
+    code: "ULTRA_EARLY_BIRDE",
+    name: "울트라 얼리버드",
+  },
+  {
+    code: "SUPER_EARLY_BIRD",
+    name: "슈퍼 얼리버드",
+  },
+  {
+    code: "EARLY_BIRD",
+    name: "얼리버드",
+  },
+  {
+    code: null,
+    name: "기본",
+  },
+];
 
 // 랜덤 데이터 생성 유틸
 const generateRandomFunding = () => {
@@ -37,13 +55,6 @@ const generateRandomFunding = () => {
       "엔터프라이즈 울트라",
       "스탠다드 패키지",
     ],
-  ];
-
-  const badgeTypes = [
-    "ULTRA_EARLY_BIRD",
-    "SUPER_EARLY_BIRD",
-    "EARLY_BIRD",
-    null,
   ];
 
   const randomTitle = titles[Math.floor(Math.random() * titles.length)];
@@ -362,15 +373,18 @@ export default function FundingCreatePage() {
                   <label className="block text-xs font-medium mb-1">
                     뱃지 타입
                   </label>
-                  <input
-                    type="text"
-                    value={reward.badgeType}
-                    onChange={(e) =>
-                      handleRewardChange(idx, "badgeType", e.target.value)
-                    }
-                    className="w-full border rounded px-3 py-1.5 text-sm"
-                    placeholder="EARLY_BIRD, SUPER_EARLY_BIRD, ULTRA_EARLY_BIRD..."
-                  />
+
+                  <select
+                      value={reward.badgeType}
+                      onChange={(e) => handleRewardChange(idx, "badgeType", e.target.value)}
+                      className="w-full border rounded-lg px-4 py-2"
+                  >
+                    {badgeTypes.map((type) => (
+                        <option key={type.code} value={type.code}>
+                          {type.name}
+                        </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
