@@ -6,7 +6,7 @@ import { parseJwt } from "../../utils/parseJwt";
 
 const badgeTypes = [
   {
-    code: "ULTRA_EARLY_BIRDE",
+    code: "ULTRA_EARLY_BIRD",
     name: "울트라 얼리버드",
   },
   {
