@@ -19,14 +19,36 @@ const generateRandomFunding = () => {
   ];
 
   const rewardNames = [
-    ["얼리버드 기본 패키지", "프리미엄 패키지", "VIP 올인원 패키지"],
-    ["스탠다드", "디럭스", "얼티밋"],
-    ["베이직", "프로", "엔터프라이즈"],
+    [
+      "울트라 얼리버드 패키지",
+      "슈퍼 얼리버드 패키지",
+      "얼리버드 패키지",
+      "기본 패키지",
+    ],
+    [
+      "슈퍼 울트라 얼리버드",
+      "얼리버드 스탠다드",
+      "디럭스 리워드",
+      "일반 얼티밋",
+    ],
+    [
+      "베이직 얼리버드",
+      "프로 슈퍼얼리버드",
+      "엔터프라이즈 울트라",
+      "스탠다드 패키지",
+    ],
+  ];
+
+  const badgeTypes = [
+    "ULTRA_EARLY_BIRD",
+    "SUPER_EARLY_BIRD",
+    "EARLY_BIRD",
+    null,
   ];
 
   const randomTitle = titles[Math.floor(Math.random() * titles.length)];
   const randomRewardSet =
-    rewardNames[Math.floor(Math.random() * rewardNames.length)];
+      rewardNames[Math.floor(Math.random() * rewardNames.length)];
 
   const now = new Date();
   const startAt = new Date(now.getTime() + 1000 * 60 * 60 * 24); // 내일
@@ -46,7 +68,7 @@ const generateRandomFunding = () => {
       name,
       description: `${name} 상품 설명입니다.`,
       limitQty: String((idx + 1) * 50),
-      badgeType: idx === 2 ? "GOLD" : idx === 1 ? "SILVER" : "BRONZE",
+      badgeType: badgeTypes[idx],
       price: String((idx + 1) * 15000),
       offerAt: formatDateTime(startAt),
       shippingCharge: String(idx === 0 ? 0 : 3000),
