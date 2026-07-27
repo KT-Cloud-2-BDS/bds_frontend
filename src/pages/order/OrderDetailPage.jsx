@@ -160,7 +160,7 @@ export default function OrderDetailPage() {
     // 만료시간 계산
     const getTimeRemaining = () => {
         if (!order?.expiresAt) return null;
-        const diff = new Date(order.expiresAt) - new Date();
+        const diff = new Date(order.expiresAt + 'Z') - new Date();
         if (diff <= 0) return '만료됨';
         const minutes = Math.floor(diff / 60000);
         const hours = Math.floor(minutes / 60);
@@ -171,7 +171,7 @@ export default function OrderDetailPage() {
     const isCancellable = order && !['CANCELLED', 'REFUNDED', 'PAYING'].includes(order.orderStatus);
     const isRefundable = ['PAID', 'CONFIRMED'].includes(order?.orderStatus);
     const isPayable = order && order.orderStatus === 'PENDING' && !order.isEnded;
-    const isExpired = order?.expiresAt && new Date(order.expiresAt) < new Date();
+    const isExpired = order?.expiresAt && new Date(order.expiresAt + 'Z') < new Date();
 
     if (loading) return <div className="text-center py-12">로딩 중...</div>;
     if (!order) return null;
