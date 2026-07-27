@@ -66,7 +66,10 @@ const generateRandomFunding = () => {
   const holdTo = new Date(startAt.getTime() + 1000 * 60 * 60 * 24 * 30); // 30일 후
   const payAt = new Date(holdTo.getTime() + 1000 * 60 * 60 * 24 * 3); // 마감 3일 후
 
-  const formatDateTime = (date) => date.toISOString().slice(0, 16);
+  const formatDateTime = (date) => {
+    const offset = date.getTimezoneOffset() * 60000;
+    return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+  };
 
   return {
     title: randomTitle,

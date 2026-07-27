@@ -88,7 +88,7 @@ export default function FundingDetailPage() {
   const progressPercent = funding.goalAmount > 0
       ? Math.min(Math.round((funding.currentAmount / funding.goalAmount) * 100), 100)
       : 0;
-  const isExpired = funding.status !== 'SCHEDULED' && funding.holdTo && new Date(funding.holdTo) < new Date();
+  const isExpired = funding.status !== 'SCHEDULED' && funding.holdTo && new Date(funding.holdTo + 'Z') < new Date();
   const isScheduled = funding.status === 'SCHEDULED';
   const isOrderable = funding.status === 'ACTIVE' && !isExpired;
 

@@ -143,7 +143,7 @@ function FundingCard({ funding, badgeType }) {
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
-    return new Date(dateStr).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+    return new Date(dateStr + 'Z').toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul', month: 'short', day: 'numeric' });
   };
 
   const getBadge = () => {

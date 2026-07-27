@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import apiClient from '../../api/apiClient.js';
 import useModalStore from '../../stores/useModalStore.js';
